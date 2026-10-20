@@ -131,6 +131,11 @@
 
   /* ---------- Formularios: validación nativa + aviso al enviar ---------- */
   document.querySelectorAll('form.elementor-form').forEach(function (form) {
+    // Tras enviar, Web3Forms redirige a la página "Gracias" del mismo sitio (github.io, radytec.es…)
+    var redirect = form.querySelector('input[name="redirect"][data-gracias]');
+    if (redirect && /^https?:$/.test(location.protocol)) {
+      redirect.value = new URL(redirect.getAttribute('data-gracias'), location.href).href;
+    }
     form.addEventListener('submit', function () {
       var btn = form.querySelector('button[type="submit"]');
       if (btn) { btn.disabled = true; btn.classList.add('elementor-form-waiting'); }
