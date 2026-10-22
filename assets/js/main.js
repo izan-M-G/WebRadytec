@@ -131,11 +131,13 @@
     btn.addEventListener('click', function () { openLightbox(btn.getAttribute('data-open-gallery')); });
   });
 
-  /* ---------- Formulario de contacto (Web3Forms) ---------- */
+  /* ---------- Formulario de contacto (FormSubmit → info@radytec.es) ---------- */
   document.querySelectorAll('form[data-contact-form]').forEach(function (form) {
-    var redirect = form.querySelector('input[name="redirect"]');
+    var next = form.querySelector('input[name="_next"]');
     var thanksUrl = new URL(form.getAttribute('data-thanks'), location.href).href;
-    if (redirect && /^https?:$/.test(location.protocol)) redirect.value = thanksUrl;
+    if (next && /^https?:$/.test(location.protocol)) next.value = thanksUrl;
+    // Envío en segundo plano por la API de FormSubmit (misma dirección con /ajax/)
+    var ajaxUrl = form.action.replace('formsubmit.co/', 'formsubmit.co/ajax/');
     var status = form.querySelector('.form-status');
     var button = form.querySelector('button[type="submit"]');
 
@@ -146,10 +148,10 @@
       button.classList.add('is-loading');
       button.disabled = true;
       if (status) { status.className = 'form-status'; status.textContent = ''; }
-      fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } })
+      fetch(ajaxUrl, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } })
         .then(function (r) { return r.json().catch(function () { return { success: r.ok }; }); })
         .then(function (data) {
-          if (data && data.success) { window.location.href = thanksUrl; return; }
+          if (data && String(data.success) === 'true') { window.location.href = thanksUrl; return; }
           throw new Error((data && data.message) || 'Error');
         })
         .catch(function () {
